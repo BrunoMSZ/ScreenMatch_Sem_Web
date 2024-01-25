@@ -1,5 +1,6 @@
 package br.com.alura.ScreenMatch2;
 
+import br.com.alura.ScreenMatch2.model.DadosEpisodio;
 import br.com.alura.ScreenMatch2.model.DadosSerie;
 import br.com.alura.ScreenMatch2.service.ConsumoAPI;
 import br.com.alura.ScreenMatch2.service.ConverteDados;
@@ -24,5 +25,8 @@ public class ScreenMatch2Application  implements CommandLineRunner { //Criar alg
 		ConverteDados conversor = new ConverteDados();
 		DadosSerie dados = conversor.obterDado(json, DadosSerie.class);
 		System.out.println(dados);
+		json = consumoAPI.obterDados("https://www.omdbapi.com/?t=Reacher&season=1&episode=2&apikey=66418c3a");
+		DadosEpisodio dadosEpisodio = conversor.obterDado(json, DadosEpisodio.class);
+		System.out.println(dadosEpisodio);
 	}
 }
