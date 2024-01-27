@@ -7,6 +7,7 @@ import br.com.alura.ScreenMatch2.service.ConsumoAPI;
 import br.com.alura.ScreenMatch2.service.ConverteDados;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -42,5 +43,24 @@ public class Principal {
 
         //Funções com parâmetros (letra) -> As funções Lambda - chamadas de funções anônimas - são uma maneira de definir funções que são frequentemente usadas uma única vez, direto no local onde elas serão usadas.
         temporadas.forEach(t ->t.episodios().forEach(e -> System.out.println(e.titulo())));
+
+        List<String> nomes = Arrays.asList("Jacque", "Iasmin", "Paulo", "Rodrigo","Nico");
+        //Operacao encadeada
+        nomes.stream()
+                .sorted().
+                limit(3)
+                .filter(n ->n.startsWith("N"))
+                .map(n -> n.toUpperCase())
+                .forEach(System.out::println);
+        //.sorted() ->ordena string e printou
+        //.filter() -> Gera um filtro, nesse caso, nomes que comecam com "N"
+        //.map() -> Faz uma tranformação, nesse caso, coloca o valor retornado pelo  filter e coloca em letras maiúsculas
+        //.limit(valor) -> limita ate o valor pedido, no caso 3
+        //.stream -> São operações intermediárias
+        //.forEach() -> Operações finais
+        //Episodio((parametro) -> expressao)
+
+
+
     }
 }
