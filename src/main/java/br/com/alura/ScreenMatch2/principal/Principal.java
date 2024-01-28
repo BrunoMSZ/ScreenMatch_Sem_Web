@@ -3,13 +3,14 @@ package br.com.alura.ScreenMatch2.principal;
 import br.com.alura.ScreenMatch2.model.DadosEpisodio;
 import br.com.alura.ScreenMatch2.model.DadosSerie;
 import br.com.alura.ScreenMatch2.model.DadosTemporada;
+import br.com.alura.ScreenMatch2.model.Episodio;
 import br.com.alura.ScreenMatch2.service.ConsumoAPI;
 import br.com.alura.ScreenMatch2.service.ConverteDados;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Principal {
     private final String _ENDERECO = "https://www.omdbapi.com/?t=";
@@ -44,23 +45,35 @@ public class Principal {
         //Funções com parâmetros (letra) -> As funções Lambda - chamadas de funções anônimas - são uma maneira de definir funções que são frequentemente usadas uma única vez, direto no local onde elas serão usadas.
         temporadas.forEach(t ->t.episodios().forEach(e -> System.out.println(e.titulo())));
 
-        List<String> nomes = Arrays.asList("Jacque", "Iasmin", "Paulo", "Rodrigo","Nico");
-        //Operacao encadeada
-        nomes.stream()
-                .sorted().
-                limit(3)
-                .filter(n ->n.startsWith("N"))
-                .map(n -> n.toUpperCase())
+        List<DadosEpisodio> dadosEpisodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()) //puxar todas as listas, neste caso, possui uma lista dentro da outra
+                .collect(Collectors.toList()); //coletar para uma lista
+                //.toList(); //é uma lista imutável, mas possui a mesma função do .collect()
+        System.out.println("\nTop 5 episódios");
+        dadosEpisodios.stream()
+                .filter(e-> !e.avaliacao().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+                .limit(5)
                 .forEach(System.out::println);
-        //.sorted() ->ordena string e printou
-        //.filter() -> Gera um filtro, nesse caso, nomes que comecam com "N"
-        //.map() -> Faz uma tranformação, nesse caso, coloca o valor retornado pelo  filter e coloca em letras maiúsculas
-        //.limit(valor) -> limita ate o valor pedido, no caso 3
-        //.stream -> São operações intermediárias
-        //.forEach() -> Operações finais
-        //Episodio((parametro) -> expressao)
 
+        List<Episodio> episodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                        .map(d -> new Episodio(t.numero(),d))).collect(Collectors.toList());
 
+        episodios.forEach(System.out::println);
 
+        System.out.println("A partir de que ano você deseja ver os episódios? ");
+        var ano = leitura.nextInt();
+        leitura.nextLine();
+
+        LocalDate dataBusca = LocalDate.of(ano,1,1);
+
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //formatando a data
+        episodios.stream()
+                .filter(e -> e.getDataLancamento()!=null && e.getDataLancamento().isAfter(dataBusca))
+                .forEach(e-> System.out.println(
+                        "Temporada: " + e.getTemporada() + "  Episódio: " +e.getTitulo() +
+                                "  Data lançamento: " + e.getDataLancamento().format(formatador)
+                ));
     }
 }
