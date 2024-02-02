@@ -49,12 +49,17 @@ public class Principal {
                 .flatMap(t -> t.episodios().stream()) //puxar todas as listas, neste caso, possui uma lista dentro da outra
                 .collect(Collectors.toList()); //coletar para uma lista
                 //.toList(); //é uma lista imutável, mas possui a mesma função do .collect()
-        System.out.println("\nTop 5 episódios");
-        dadosEpisodios.stream()
-                .filter(e-> !e.avaliacao().equalsIgnoreCase("N/A"))
-                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
-                .limit(5)
-                .forEach(System.out::println);
+//        System.out.println("\nTop 10 episódios");
+//        dadosEpisodios.stream()
+//                .filter(e-> !e.avaliacao().equalsIgnoreCase("N/A"))
+//                .peek(e-> System.out.println("Primeiro Filtro(N/A)" + e)) //peek serve para analisar o que está acontecendo dentro do código, como se fosse um "DEBUG"
+//                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+//                .peek(e-> System.out.println("Ordenação " + e))
+//                .limit(10)
+//                .peek(e-> System.out.println("Limite " + e))
+//                .map(e->e.titulo().toUpperCase())
+//                .peek(e-> System.out.println("Mapeamento " + e))
+//                .forEach(System.out::println);
 
         List<Episodio> episodios = temporadas.stream()
                 .flatMap(t -> t.episodios().stream()
@@ -62,18 +67,48 @@ public class Principal {
 
         episodios.forEach(System.out::println);
 
-        System.out.println("A partir de que ano você deseja ver os episódios? ");
-        var ano = leitura.nextInt();
-        leitura.nextLine();
+        System.out.println("Digite um titulo de um episódio :");
+        var trechoTitulo = leitura.nextLine();
+        Optional<Episodio> episodioBuscado = episodios.stream()
+                .filter(e -> e.getTitulo().toUpperCase().contains(trechoTitulo.toUpperCase()))//se tiver algum trecho de um titulo de um episodio em especifico
+                .findFirst();//busca a mesma ordem de busca, o ANY busca qualquer coisa
+        //Optional é um objeto contêiner que pode ou não conter um valor não nulo (parecido como uma lista)
+        //O principal uso do Optional é fornecer um tipo de retorno alternativo quando um método pode não retornar um valor
+        if(episodioBuscado.isPresent()){ //se está presente na "lista"
+            System.out.println("Episódio encontrado!");
+            System.out.println("Temporada: " + episodioBuscado.get().getTemporada());
+        }else{
+            System.out.println("Episódio não encontrado!");
+        }
+//        System.out.println("A partir de que ano você deseja ver os episódios? ");
+//        var ano = leitura.nextInt();
+//        leitura.nextLine();
+//
+//        LocalDate dataBusca = LocalDate.of(ano,1,1);
+//
+//        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //formatando a data
+//        episodios.stream()
+//                .filter(e -> e.getDataLancamento()!=null && e.getDataLancamento().isAfter(dataBusca))
+//                .forEach(e-> System.out.println(
+//                        "Temporada: " + e.getTemporada() + "  Episódio: " +e.getTitulo() +
+//                                "  Data lançamento: " + e.getDataLancamento().format(formatador)
+//                ));
 
-        LocalDate dataBusca = LocalDate.of(ano,1,1);
+        System.out.println("Avaliações por Temporada: \n");
+        Map<Integer, Double> avaliacoesPorTemporada = episodios.stream()
+                .filter(e->e.getAvaliacao() > 0.0)
+                .collect(Collectors.groupingBy(Episodio::getTemporada, Collectors.averagingDouble(Episodio::getAvaliacao))); //Usa a classe collectors para realizar um "dicionario" de chave e valor, além de realizar a média das avaliações dos episodios e atribuindo a cada temporada
 
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //formatando a data
-        episodios.stream()
-                .filter(e -> e.getDataLancamento()!=null && e.getDataLancamento().isAfter(dataBusca))
-                .forEach(e-> System.out.println(
-                        "Temporada: " + e.getTemporada() + "  Episódio: " +e.getTitulo() +
-                                "  Data lançamento: " + e.getDataLancamento().format(formatador)
-                ));
+        System.out.println(avaliacoesPorTemporada);
+
+        //Estatisticas
+        DoubleSummaryStatistics est = episodios.stream()
+                .filter(e->e.getAvaliacao() > 0.0)
+                .collect(Collectors.summarizingDouble(Episodio::getAvaliacao));
+        //count = qtd de episódios, sum = soma, min = minimo, max = máximo, average = media (todos com base me getAvaliacao)
+
+        System.out.println("Média: " + est.getAverage()
+        + "\nMelhor episódio: " + est.getMax() + "\nPior episódio: " + est.getMin() + "\nQuantidade episódios: " + est.getCount());
+
     }
 }
